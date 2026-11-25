@@ -1,0 +1,55 @@
+name: Build e execução
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  executar:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: veiculos_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilar
+        run: mvn -B clean compile
+
+      - name: Executar AppVeiculos
+        run: mvn -B -q exec:java -Dexec.mainClass=br.edu.faculdade.app.AppVeiculos 2>&1 | tee execucao.log
+
+      - name: Publicar log na branch logs
+        run: |
+          mkdir /tmp/out && cp execucao.log /tmp/out/
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan logs
+          git rm -rfq .
+          cp /tmp/out/execucao.log .
+          git add execucao.log
+          git commit -qm "log de execução"
+          git push -f origin logs
