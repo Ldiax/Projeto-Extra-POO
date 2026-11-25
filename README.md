@@ -6,7 +6,9 @@ Prof. Me. Alexandre Louzada
 Módulo central de um sistema de **Gerenciamento e Controle de Frotas de Veículos**, implementado com
 Mapeamento Objeto-Relacional (ORM) usando **JPA 2.2**, **Hibernate 5.6** e **PostgreSQL 16+**.
 
-**Autor(es):** Lucas — _(adicionar nome completo e matrícula; e da dupla, se houver)_
+**Dupla:**
+- Lucas Dias Quadros de Almeida
+- Douglas da Costa de Oliveira
 
 ---
 
