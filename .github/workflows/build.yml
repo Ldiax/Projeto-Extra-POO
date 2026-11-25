@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   executar:
@@ -40,16 +40,5 @@ jobs:
         run: mvn -B clean compile
 
       - name: Executar AppVeiculos
-        run: mvn -B -q exec:java -Dexec.mainClass=br.edu.faculdade.app.AppVeiculos 2>&1 | tee execucao.log
+        run: mvn -B -q exec:java -Dexec.mainClass=br.edu.faculdade.app.AppVeiculos
 
-      - name: Publicar log na branch logs
-        run: |
-          mkdir /tmp/out && cp execucao.log /tmp/out/
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git checkout --orphan logs
-          git rm -rfq .
-          cp /tmp/out/execucao.log .
-          git add execucao.log
-          git commit -qm "log de execução"
-          git push -f origin logs

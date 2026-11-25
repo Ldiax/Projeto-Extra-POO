@@ -27,6 +27,7 @@ Mapeamento Objeto-Relacional (ORM) usando **JPA 2.2**, **Hibernate 5.6** e **Pos
 
 ```
 trabalho-jpa-veiculos/
+├── .github/workflows/build.yml     # CI: compila e executa com PostgreSQL 16
 ├── pom.xml
 ├── README.md
 └── src/main/
@@ -100,7 +101,7 @@ mvn exec:java -Dexec.mainClass=br.edu.faculdade.app.AppVeiculos
    - **B:** veículos de um fabricante específico (`Toyota`) via parâmetro nomeado `:nomeFabricante`.
    - **C:** preço médio dos veículos agrupado por fabricante (`JOIN`, `AVG` e `GROUP BY`).
 
-### Saída esperada (resumo)
+### Saída da execução
 
 ```
 >>> Carga de dados realizada com sucesso!
@@ -118,34 +119,241 @@ Placa: EFG4H56 | Modelo: Corolla | Cor: Branco
 Placa: IJK7L89 | Modelo: Hilux | Cor: Prata
 
 --- [JPQL C: Média de Preço Agrupada por Fabricante] ---
-Fabricante: Toyota | Preço Médio: R$ 187666,67
-Fabricante: Volkswagen | Preço Médio: R$ 95000,00
+Fabricante: Toyota | Preço Médio: R$ 187666.67
+Fabricante: Volkswagen | Preço Médio: R$ 95000.00
 ```
 
-_(A ordem das linhas nas consultas B e C pode variar, pois elas não têm `ORDER BY`. O separador decimal da consulta C segue o idioma do sistema.)_
+### Integração contínua
+
+O workflow `.github/workflows/build.yml` compila o projeto e executa a `AppVeiculos` contra um PostgreSQL 16
+a cada push na branch `main` (aba **Actions** do repositório).
 
 ---
 
 ## Relatório técnico — logs do Hibernate
 
-Logs gerados pelo Hibernate no console durante a execução (`hibernate.show_sql` e `hibernate.format_sql` ativados).
+Logs gerados pelo Hibernate no console durante a execução (`hibernate.show_sql` e `hibernate.format_sql` ativados), com PostgreSQL 16.
 
 ### Criação das tabelas (CREATE TABLE)
 
+Gerado automaticamente pelo `hibernate.hbm2ddl.auto = update` na primeira execução, com as restrições `UNIQUE` e as chaves estrangeiras:
+
 ```sql
--- COLAR AQUI os blocos "create table tb_fabricante", "create table tb_modelo",
--- "create table tb_veiculo" e os "alter table ... add constraint" do console
+create table tb_fabricante (
+   id  bigserial not null,
+    data_fundacao date,
+    nome varchar(60) not null,
+    pais_origem varchar(40),
+    primary key (id)
+);
+
+create table tb_modelo (
+   id  bigserial not null,
+    categoria varchar(20) not null,
+    nome varchar(60) not null,
+    fabricante_id int8 not null,
+    primary key (id)
+);
+
+create table tb_veiculo (
+   id  bigserial not null,
+    ano_fabricacao int4,
+    cor varchar(30),
+    placa varchar(7) not null,
+    preco numeric(10, 2),
+    renavam varchar(11) not null,
+    modelo_id int8 not null,
+    primary key (id)
+);
+
+alter table tb_fabricante 
+   drop constraint UK_1owg4pjytk8ofc6e3il5abv94;
+
+alter table tb_fabricante 
+   add constraint UK_1owg4pjytk8ofc6e3il5abv94 unique (nome);
+
+alter table tb_veiculo 
+   drop constraint UK_leg11chk88p1csrmb81seh701;
+
+alter table tb_veiculo 
+   add constraint UK_leg11chk88p1csrmb81seh701 unique (placa);
+
+alter table tb_veiculo 
+   drop constraint UK_m23qrkbmsbj20ii23w0yhk8x2;
+
+alter table tb_veiculo 
+   add constraint UK_m23qrkbmsbj20ii23w0yhk8x2 unique (renavam);
+
+alter table tb_modelo 
+   add constraint FK68l9qdsyt48ix7v2ldxpivcbt 
+   foreign key (fabricante_id) 
+   references tb_fabricante;
+
+alter table tb_veiculo 
+   add constraint FKlm9obvdep2jjcm7nb4piyhrp 
+   foreign key (modelo_id) 
+   references tb_modelo;
 ```
 
 ### Inserções (INSERT)
 
+Apenas `em.persist(toyota)` e `em.persist(vw)` foram chamados; os modelos e veículos foram inseridos em cascata (`CascadeType.ALL`):
+
 ```sql
--- COLAR AQUI os blocos "insert into tb_fabricante", "insert into tb_modelo"
--- e "insert into tb_veiculo" do console
+insert 
+into
+    tb_fabricante
+    (data_fundacao, nome, pais_origem) 
+values
+    (?, ?, ?);
+
+insert 
+into
+    tb_modelo
+    (categoria, fabricante_id, nome) 
+values
+    (?, ?, ?);
+
+insert 
+into
+    tb_veiculo
+    (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+values
+    (?, ?, ?, ?, ?, ?);
+
+insert 
+into
+    tb_veiculo
+    (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+values
+    (?, ?, ?, ?, ?, ?);
+
+insert 
+into
+    tb_modelo
+    (categoria, fabricante_id, nome) 
+values
+    (?, ?, ?);
+
+insert 
+into
+    tb_veiculo
+    (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+values
+    (?, ?, ?, ?, ?, ?);
+
+insert 
+into
+    tb_fabricante
+    (data_fundacao, nome, pais_origem) 
+values
+    (?, ?, ?);
+
+insert 
+into
+    tb_modelo
+    (categoria, fabricante_id, nome) 
+values
+    (?, ?, ?);
+
+insert 
+into
+    tb_veiculo
+    (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+values
+    (?, ?, ?, ?, ?, ?);
 ```
 
 ### Consultas (SELECT)
 
 ```sql
--- COLAR AQUI o SELECT da busca por ID (em.find) e os SELECTs das consultas JPQL A, B e C
+-- Busca por ID: em.find(Veiculo.class, id)
+select
+    veiculo0_.id as id1_2_0_,
+    veiculo0_.ano_fabricacao as ano_fabr2_2_0_,
+    veiculo0_.cor as cor3_2_0_,
+    veiculo0_.modelo_id as modelo_i7_2_0_,
+    veiculo0_.placa as placa4_2_0_,
+    veiculo0_.preco as preco5_2_0_,
+    veiculo0_.renavam as renavam6_2_0_ 
+from
+    tb_veiculo veiculo0_ 
+where
+    veiculo0_.id=?;
+
+-- Carregamento LAZY do Modelo do veículo buscado
+select
+    modelo0_.id as id1_1_0_,
+    modelo0_.categoria as categori2_1_0_,
+    modelo0_.fabricante_id as fabrican4_1_0_,
+    modelo0_.nome as nome3_1_0_ 
+from
+    tb_modelo modelo0_ 
+where
+    modelo0_.id=?;
+
+-- JPQL A: veículos SEDAN ordenados por preço decrescente
+select
+    veiculo0_.id as id1_2_,
+    veiculo0_.ano_fabricacao as ano_fabr2_2_,
+    veiculo0_.cor as cor3_2_,
+    veiculo0_.modelo_id as modelo_i7_2_,
+    veiculo0_.placa as placa4_2_,
+    veiculo0_.preco as preco5_2_,
+    veiculo0_.renavam as renavam6_2_ 
+from
+    tb_veiculo veiculo0_ cross 
+join
+    tb_modelo modelo1_ 
+where
+    veiculo0_.modelo_id=modelo1_.id 
+    and modelo1_.categoria=? 
+order by
+    veiculo0_.preco DESC;
+
+-- JPQL B: veículos do fabricante Toyota
+select
+    veiculo0_.id as id1_2_,
+    veiculo0_.ano_fabricacao as ano_fabr2_2_,
+    veiculo0_.cor as cor3_2_,
+    veiculo0_.modelo_id as modelo_i7_2_,
+    veiculo0_.placa as placa4_2_,
+    veiculo0_.preco as preco5_2_,
+    veiculo0_.renavam as renavam6_2_ 
+from
+    tb_veiculo veiculo0_ cross 
+join
+    tb_modelo modelo1_ cross 
+join
+    tb_fabricante fabricante2_ 
+where
+    veiculo0_.modelo_id=modelo1_.id 
+    and modelo1_.fabricante_id=fabricante2_.id 
+    and fabricante2_.nome=?;
+
+-- Carregamento LAZY do Modelo Hilux (ainda não estava no contexto de persistência)
+select
+    modelo0_.id as id1_1_0_,
+    modelo0_.categoria as categori2_1_0_,
+    modelo0_.fabricante_id as fabrican4_1_0_,
+    modelo0_.nome as nome3_1_0_ 
+from
+    tb_modelo modelo0_ 
+where
+    modelo0_.id=?;
+
+-- JPQL C: preço médio agrupado por fabricante
+select
+    fabricante2_.nome as col_0_0_,
+    avg(veiculo0_.preco) as col_1_0_ 
+from
+    tb_veiculo veiculo0_ 
+inner join
+    tb_modelo modelo1_ 
+        on veiculo0_.modelo_id=modelo1_.id 
+inner join
+    tb_fabricante fabricante2_ 
+        on modelo1_.fabricante_id=fabricante2_.id 
+group by
+    fabricante2_.nome;
 ```
