@@ -1,0 +1,254 @@
+Nov 25, 2026 1:28:34 AM org.hibernate.jpa.internal.util.LogHelper logPersistenceUnitInformation
+INFO: HHH000204: Processing PersistenceUnitInfo [name: PuVeiculosPostgres]
+Nov 25, 2026 1:28:34 AM org.hibernate.Version logVersion
+INFO: HHH000412: Hibernate ORM core version 5.6.15.Final
+Nov 25, 2026 1:28:34 AM org.hibernate.annotations.common.reflection.java.JavaReflectionManager <clinit>
+INFO: HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl configure
+WARN: HHH10001002: Using Hibernate built-in connection pool (not for production use!)
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+INFO: HHH10001005: using driver [org.postgresql.Driver] at URL [jdbc:postgresql://localhost:5432/veiculos_db]
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+INFO: HHH10001001: Connection properties: {password=****, user=postgres}
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl buildCreator
+INFO: HHH10001003: Autocommit mode: false
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections <init>
+INFO: HHH000115: Hibernate connection pool size: 20 (min=1)
+Nov 25, 2026 1:28:34 AM org.hibernate.dialect.Dialect <init>
+INFO: HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect
+Nov 25, 2026 1:28:34 AM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
+INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@511b70b4] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+Hibernate: 
+    
+    create table tb_fabricante (
+       id  bigserial not null,
+        data_fundacao date,
+        nome varchar(60) not null,
+        pais_origem varchar(40),
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table tb_modelo (
+       id  bigserial not null,
+        categoria varchar(20) not null,
+        nome varchar(60) not null,
+        fabricante_id int8 not null,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table tb_veiculo (
+       id  bigserial not null,
+        ano_fabricacao int4,
+        cor varchar(30),
+        placa varchar(7) not null,
+        preco numeric(10, 2),
+        renavam varchar(11) not null,
+        modelo_id int8 not null,
+        primary key (id)
+    )
+Hibernate: 
+    
+    alter table tb_fabricante 
+       drop constraint UK_1owg4pjytk8ofc6e3il5abv94
+Hibernate: 
+    
+    alter table tb_fabricante 
+       add constraint UK_1owg4pjytk8ofc6e3il5abv94 unique (nome)
+Hibernate: 
+    
+    alter table tb_veiculo 
+       drop constraint UK_leg11chk88p1csrmb81seh701
+Hibernate: 
+    
+    alter table tb_veiculo 
+       add constraint UK_leg11chk88p1csrmb81seh701 unique (placa)
+Hibernate: 
+    
+    alter table tb_veiculo 
+       drop constraint UK_m23qrkbmsbj20ii23w0yhk8x2
+Hibernate: 
+    
+    alter table tb_veiculo 
+       add constraint UK_m23qrkbmsbj20ii23w0yhk8x2 unique (renavam)
+Hibernate: 
+    
+    alter table tb_modelo 
+       add constraint FK68l9qdsyt48ix7v2ldxpivcbt 
+       foreign key (fabricante_id) 
+       references tb_fabricante
+Hibernate: 
+    
+    alter table tb_veiculo 
+       add constraint FKlm9obvdep2jjcm7nb4piyhrp 
+       foreign key (modelo_id) 
+       references tb_modelo
+Nov 25, 2026 1:28:34 AM org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator initiateService
+INFO: HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+Hibernate: 
+    insert 
+    into
+        tb_fabricante
+        (data_fundacao, nome, pais_origem) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_modelo
+        (categoria, fabricante_id, nome) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_veiculo
+        (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_veiculo
+        (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_modelo
+        (categoria, fabricante_id, nome) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_veiculo
+        (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_fabricante
+        (data_fundacao, nome, pais_origem) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_modelo
+        (categoria, fabricante_id, nome) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        tb_veiculo
+        (ano_fabricacao, cor, modelo_id, placa, preco, renavam) 
+    values
+        (?, ?, ?, ?, ?, ?)
+>>> Carga de dados realizada com sucesso!
+
+Hibernate: 
+    select
+        veiculo0_.id as id1_2_0_,
+        veiculo0_.ano_fabricacao as ano_fabr2_2_0_,
+        veiculo0_.cor as cor3_2_0_,
+        veiculo0_.modelo_id as modelo_i7_2_0_,
+        veiculo0_.placa as placa4_2_0_,
+        veiculo0_.preco as preco5_2_0_,
+        veiculo0_.renavam as renavam6_2_0_ 
+    from
+        tb_veiculo veiculo0_ 
+    where
+        veiculo0_.id=?
+--- [Busca por ID (em.find)] ---
+Hibernate: 
+    select
+        modelo0_.id as id1_1_0_,
+        modelo0_.categoria as categori2_1_0_,
+        modelo0_.fabricante_id as fabrican4_1_0_,
+        modelo0_.nome as nome3_1_0_ 
+    from
+        tb_modelo modelo0_ 
+    where
+        modelo0_.id=?
+Veículo Encontrado: ABC1D23 - Modelo: Corolla
+
+--- [JPQL A: Veículos por Categoria (SEDAN) - Preço Decrescente] ---
+Hibernate: 
+    select
+        veiculo0_.id as id1_2_,
+        veiculo0_.ano_fabricacao as ano_fabr2_2_,
+        veiculo0_.cor as cor3_2_,
+        veiculo0_.modelo_id as modelo_i7_2_,
+        veiculo0_.placa as placa4_2_,
+        veiculo0_.preco as preco5_2_,
+        veiculo0_.renavam as renavam6_2_ 
+    from
+        tb_veiculo veiculo0_ cross 
+    join
+        tb_modelo modelo1_ 
+    where
+        veiculo0_.modelo_id=modelo1_.id 
+        and modelo1_.categoria=? 
+    order by
+        veiculo0_.preco DESC
+Placa: EFG4H56 | Modelo: Corolla | Preço: R$ 158000.00
+Placa: ABC1D23 | Modelo: Corolla | Preço: R$ 145000.00
+
+--- [JPQL B: Veículos do Fabricante (Toyota)] ---
+Hibernate: 
+    select
+        veiculo0_.id as id1_2_,
+        veiculo0_.ano_fabricacao as ano_fabr2_2_,
+        veiculo0_.cor as cor3_2_,
+        veiculo0_.modelo_id as modelo_i7_2_,
+        veiculo0_.placa as placa4_2_,
+        veiculo0_.preco as preco5_2_,
+        veiculo0_.renavam as renavam6_2_ 
+    from
+        tb_veiculo veiculo0_ cross 
+    join
+        tb_modelo modelo1_ cross 
+    join
+        tb_fabricante fabricante2_ 
+    where
+        veiculo0_.modelo_id=modelo1_.id 
+        and modelo1_.fabricante_id=fabricante2_.id 
+        and fabricante2_.nome=?
+Placa: ABC1D23 | Modelo: Corolla | Cor: Preto
+Placa: EFG4H56 | Modelo: Corolla | Cor: Branco
+Hibernate: 
+    select
+        modelo0_.id as id1_1_0_,
+        modelo0_.categoria as categori2_1_0_,
+        modelo0_.fabricante_id as fabrican4_1_0_,
+        modelo0_.nome as nome3_1_0_ 
+    from
+        tb_modelo modelo0_ 
+    where
+        modelo0_.id=?
+Placa: IJK7L89 | Modelo: Hilux | Cor: Prata
+
+--- [JPQL C: Média de Preço Agrupada por Fabricante] ---
+Hibernate: 
+    select
+        fabricante2_.nome as col_0_0_,
+        avg(veiculo0_.preco) as col_1_0_ 
+    from
+        tb_veiculo veiculo0_ 
+    inner join
+        tb_modelo modelo1_ 
+            on veiculo0_.modelo_id=modelo1_.id 
+    inner join
+        tb_fabricante fabricante2_ 
+            on modelo1_.fabricante_id=fabricante2_.id 
+    group by
+        fabricante2_.nome
+Fabricante: Toyota | Preço Médio: R$ 187666.67
+Fabricante: Volkswagen | Preço Médio: R$ 95000.00
+Nov 25, 2026 1:28:35 AM org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PoolState stop
+INFO: HHH10001008: Cleaning up connection pool [jdbc:postgresql://localhost:5432/veiculos_db]
